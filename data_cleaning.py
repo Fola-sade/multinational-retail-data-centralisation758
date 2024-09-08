@@ -16,8 +16,7 @@ class DataCleaning:
         
         df_cleaned = df.drop_duplicates()
         df_cleaned = df_cleaned.dropna()  # Handle missing values
-        
-        # Additional cleaning logic...
+
         
         print("CSV data cleaned successfully.")
         return df_cleaned
