@@ -57,3 +57,17 @@ class DataCleaning:
         
         print("S3 data cleaned successfully.")
         return df_cleaned
+    
+    def clean_user_data(self, df):
+        """
+        Cleans the user data by handling NULL values, fixing date issues, and filtering out incorrect data.
+        
+        :param df: DataFrame containing user data.
+        :return: Cleaned DataFrame.
+        """
+        # Example cleaning steps:
+        df.dropna(subset=['user_id'], inplace=True)  # Remove rows where user_id is null
+        df['registration_date'] = pd.to_datetime(df['registration_date'], errors='coerce')  # Convert dates
+        df = df[df['age'] > 0]  # Remove rows with invalid age
+        
+        return df
