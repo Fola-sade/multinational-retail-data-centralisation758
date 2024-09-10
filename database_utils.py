@@ -2,6 +2,7 @@ import psycopg2
 import pandas as pd
 import yaml
 from sqlalchemy import create_engine
+from sqlalchemy import text  # Import text function
 
 class DatabaseConnector:
     def __init__(self):
@@ -34,23 +35,25 @@ class DatabaseConnector:
     def list_db_tables(self):
         """
         Lists all tables in the connected database.
-        returns : List of table names.
-
+        Returns: List of table names or None if an error occurs.
         """
-
         engine = self.init_db_engine()
         if engine is None:
             print("No database engine available.")
             return None
-        
+    
         try:
             with engine.connect() as connection:
-                result = connection.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='public';")
+                result = connection.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema='public';"))
                 tables = [row[0] for row in result]
+                if not tables:
+                   print("No tables found in the database.")
+                   return None
+                print(f"Tables in the database: {tables}")
                 return tables
         except Exception as e:
             print(f"Error listing tables: {e}")
-            return None   
+            return None
 
     def upload_to_db(self, df, table_name):
         """
