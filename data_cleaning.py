@@ -1,6 +1,9 @@
 import pandas as pd
 
 class DataCleaning:
+
+    def __init__(self):
+        pass
     
     def clean_csv_data(self, df: pd.DataFrame) -> pd.DataFrame:
         """

@@ -1,7 +1,7 @@
 import csv
 import requests #Extracting data from an api
 import boto3  #Extracting data from an AWS S3 Bucket
-import pandas as pandas
+import pandas as pd
 
 class DataExtractor:
     def __init__(self):
@@ -9,7 +9,7 @@ class DataExtractor:
     #Method to extract from a CSV doc
     def extract_from_csv(self, filepath):
         try:
-            data_csv = pd.read_csv(filepath)
+            data = pd.read_csv(filepath)
             print(f"Successfully extracted data from {filepath}")
             return data
         except Exception as e:
@@ -60,8 +60,10 @@ class DataExtractor:
         try:
             df = pd.read_sql_table(table_name, con=engine)
             return df
+        
         except Exception as e:
             print(f"Error reading table {table_name}: {e}")
-            return None        
+            return None     
+        print(df)   
 
 
