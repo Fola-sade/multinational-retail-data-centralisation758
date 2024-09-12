@@ -66,4 +66,3 @@ class DataExtractor:
             return None     
         print(df)   
 
-
