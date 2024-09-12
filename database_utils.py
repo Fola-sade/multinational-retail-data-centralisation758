@@ -19,7 +19,7 @@ class DatabaseConnector:
 
     def read_db_local_creds(self, filepath = 'db_local_creds.yaml'):
         try:
-            with open(filepath, 'w') as file:
+            with open(filepath, 'r') as file:
                 creds = yaml.safe_load(file)
             return creds
         except Exception as e:
@@ -50,7 +50,7 @@ class DatabaseConnector:
         if creds is None:
             return None
         try:
-            engine = create_engine(f"postgresql://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")
+            engine = create_engine(f"{'postgresql'}+{'psycopg2'}://{creds['RDS_USER']}:{creds['RDS_PASSWORD']}@{creds['RDS_HOST']}:{creds['RDS_PORT']}/{creds['RDS_DATABASE']}")
             return engine
         except Exception as e:
             print(f"Error initializing database engine: {e}")
@@ -79,17 +79,13 @@ class DatabaseConnector:
             print(f"Error listing tables: {e}")
             return None
 
-    def upload_to_db(self, df, table_name):
+    def upload_to_db(self, df, engine, table_name):
         """
         Uploads a pandas DataFrame to the specified table in the database.
         
         :param df: DataFrame to upload.
         :param table_name: The name of the table to upload the data to.
         """
-        engine = self.init_db_engine_local()
-        if engine is None:
-            print("No database engine available.")
-            return
 
         try:
             df.to_sql(table_name, con=engine, if_exists='replace', index=False)

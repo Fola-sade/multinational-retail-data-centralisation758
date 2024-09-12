@@ -63,14 +63,42 @@ class DataCleaning:
     
     def clean_user_data(self, df):
         """
-        Cleans the user data by handling NULL values, fixing date issues, and filtering out incorrect data.
-        
-        :param df: DataFrame containing user data.
-        :return: Cleaned DataFrame.
+        Cleans a DataFrame by handling NULL values, converting dates, and filtering out invalid data.
+        The cleaning process will adapt based on the columns present in the DataFrame.
+
+        :param df: DataFrame to clean.
+        :return: Cleaned DataFrame, or None if the input is invalid.
         """
-        # Example cleaning steps:
-        df.dropna(subset=['user_id'], inplace=True)  # Remove rows where user_id is null
-        df['registration_date'] = pd.to_datetime(df['registration_date'], errors='coerce')  # Convert dates
-        df = df[df['age'] > 0]  # Remove rows with invalid age
-        
+        # Ensure that df is a valid DataFrame before proceeding
+        if df is None:
+            print("Error: Received None as the DataFrame input.")
+            return None
+
+        if df.empty:
+            print("Error: Received an empty DataFrame.")
+            return None
+
+        try:
+            # Drop rows with any missing values (can be adjusted based on the use case)
+            df.dropna(inplace=True)
+
+            # Convert any columns that are recognized as dates
+            date_columns = df.select_dtypes(include=['object']).columns
+            for col in date_columns:
+                # Try converting columns that might be dates
+                try:
+                    df[col] = pd.to_datetime(df[col], errors='coerce')
+                except Exception as e:
+                    print(f"Error converting column {col} to datetime: {e}")
+
+            # Remove any rows where numerical values are invalid (e.g., age less than 0)
+            numerical_columns = df.select_dtypes(include=['number']).columns
+            for col in numerical_columns:
+                if col == 'age':
+                    df = df[df[col] > 0]  # Remove rows where 'age' is <= 0
+
+        except Exception as e:
+            print(f"An error occurred while cleaning the data: {e}")
+            return None
+
         return df
