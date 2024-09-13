@@ -87,10 +87,10 @@ class DataCleaning:
             for col in date_columns:
                 # Try converting columns that might be dates
                 try:
-                    df[col] = pd.to_datetime(df[col], errors='coerce')
+                    df[col] = pd.to_datetime(df[col], format='%Y-%m-%d', errors='coerce')
                 except Exception as e:
                     print(f"Error converting column {col} to datetime: {e}")
-
+                
             # Remove any rows where numerical values are invalid (e.g., age less than 0)
             numerical_columns = df.select_dtypes(include=['number']).columns
             for col in numerical_columns:
