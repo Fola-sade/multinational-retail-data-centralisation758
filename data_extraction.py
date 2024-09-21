@@ -10,7 +10,7 @@ class DataExtractor:
     def extract_from_csv(self, filepath):
         try:
             data = pd.read_csv(filepath)
-            print(f"Successfully extracted data from {filepath}")
+            print(f"Succcsvessfully extracted data from {filepath}")
             return data
         except Exception as e:
             print(f"Error extracting data from csv: {e}")
@@ -44,25 +44,24 @@ class DataExtractor:
             print(f"Error extracting data from S3: {e}")
             return None
         
-    def read_rds_table(self, db_connector, table_name):
+    def read_rds_table(self, engine, table_name):
         """
         Extracts the specified table from the database and returns it as a pandas DataFrame.
-        
-        :param db_connector: An instance of the DatabaseConnector class.
+    
+        :param engine: A SQLAlchemy engine instance.
         :param table_name: The name of the table to extract.
         :return: pandas DataFrame containing the table data.
         """
-        engine = db_connector.init_db_engine()
-        if engine is None:
-            print("No database engine available.")
-            return None
-        
+
+
         try:
+        # Using pandas read_sql_table to read the table into a DataFrame
             df = pd.read_sql_table(table_name, con=engine)
             return df
-        
+    
         except Exception as e:
             print(f"Error reading table {table_name}: {e}")
-            return None     
-        print(df)   
+            return None
+
+
 

@@ -1,4 +1,7 @@
 import pandas as pd
+import numpy as np 
+from datetime import datetime
+import re
 
 class DataCleaning:
 
@@ -61,7 +64,8 @@ class DataCleaning:
         print("S3 data cleaned successfully.")
         return df_cleaned
     
-    def clean_user_data(self, df):
+    
+    def clean_user_data(self, df, date_columns = None):
         """
         Cleans a DataFrame by handling NULL values, converting dates, and filtering out invalid data.
         The cleaning process will adapt based on the columns present in the DataFrame.
@@ -83,13 +87,14 @@ class DataCleaning:
             df.dropna(inplace=True)
 
             # Convert any columns that are recognized as dates
-            date_columns = df.select_dtypes(include=['object']).columns
-            for col in date_columns:
-                # Try converting columns that might be dates
-                try:
-                    df[col] = pd.to_datetime(df[col], format='%Y-%m-%d', errors='coerce')
-                except Exception as e:
-                    print(f"Error converting column {col} to datetime: {e}")
+            if date_columns:
+                for col in date_columns:
+                    if col in df.columns:
+                        # Try converting columns that might be dates
+                        try:
+                            df[col] = pd.to_datetime(df[col], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+                        except Exception as e:
+                            print(f"Error converting column {col} to datetime: {e}")
                 
             # Remove any rows where numerical values are invalid (e.g., age less than 0)
             numerical_columns = df.select_dtypes(include=['number']).columns
@@ -102,3 +107,32 @@ class DataCleaning:
             return None
 
         return df
+    
+    def clean_card_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Cleans the card data by removing NULL values and fixing formatting errors.
+
+        :param df: DataFrame containing card data.
+        :return: Cleaned DataFrame.
+        """
+        if df is None or df.empty:
+            print("Error: Received None or empty DataFrame.")
+            return None
+
+        try:
+            # Remove rows with all null values
+            df.dropna(how='all', inplace=True)
+
+            # Drop duplicates if any
+            df.drop_duplicates(inplace=True)
+
+            # Handle missing values in specific columns (replace with NaN if necessary)
+            df.fillna('Unknown', inplace=True)  # Example of filling NULLs with 'Unknown'
+
+            # Optional: Apply formatting corrections if needed (e.g., trimming whitespace)
+            df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+
+            return df
+        except Exception as e:
+            print(f"Error cleaning card data: {e}")
+            return None  
