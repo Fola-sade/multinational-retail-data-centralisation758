@@ -108,7 +108,7 @@ class DataCleaning:
 
         return df
     
-    def clean_card_data(self, df: pd.DataFrame) -> pd.DataFrame:
+    def clean_card_data(self, df):
         """
         Cleans the card data by removing NULL values and fixing formatting errors.
 
@@ -122,15 +122,25 @@ class DataCleaning:
         try:
             # Remove rows with all null values
             df.dropna(how='all', inplace=True)
+            df['date_payment_confirmed'] = pd.to_datetime(df['date_payment_confirmed'], infer_datetime_format=True, errors='coerce')
 
-            # Drop duplicates if any
-            df.drop_duplicates(inplace=True)
+            # create a regex pattern to match rows with random letters and numbers
+            pattern = r'^[a-zA-Z0-9]*$'
 
-            # Handle missing values in specific columns (replace with NaN if necessary)
-            df.fillna('Unknown', inplace=True)  # Example of filling NULLs with 'Unknown'
+            # create a boolean mask for missing or random values
+            mask = (df['date_payment_confirmed'].isna()) | (df['date_payment_confirmed'].astype(str).str.contains(pattern))
 
-            # Optional: Apply formatting corrections if needed (e.g., trimming whitespace)
-            df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+            # drop the rows with missing or random values
+            df = df[~mask]
+
+            # Define a regular expression that matches all non-numeric characters
+            pattern = r'[^0-9]'
+
+            # Use the replace() method to remove all non-numeric characters from the column
+            df['card_number'] = df['card_number'].replace(pattern, '', regex=True)
+
+            # print("Longest length is:\n", df.expiry_date.str.len().max())
+            print("Longest length is:", df['card_number'].astype(str).str.len().max())
 
             return df
         except Exception as e:

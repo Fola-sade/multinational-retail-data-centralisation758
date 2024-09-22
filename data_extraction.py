@@ -2,6 +2,7 @@ import csv
 import requests #Extracting data from an api
 import boto3  #Extracting data from an AWS S3 Bucket
 import pandas as pd
+import tabula
 
 class DataExtractor:
     def __init__(self):
@@ -64,4 +65,16 @@ class DataExtractor:
             return None
 
 
+    def retrieve_pdf_data(self, pdf_link: str) -> pd.DataFrame:
+        try:
+            # Extract all tables from the PDF file
+            df_list = tabula.read_pdf(pdf_link, pages='all', multiple_tables=True)
+            
+            # Combine all tables into one DataFrame
+            combined_df = pd.concat(df_list, ignore_index=True)
+            
+            return combined_df
+        except Exception as e:
+            print(f"Error extracting data from PDF: {e}")
+            return pd.DataFrame()  # Return empty DataFrame in case of error
 

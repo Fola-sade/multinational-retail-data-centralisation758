@@ -20,5 +20,12 @@ users_df = data_cleaning.clean_user_data(users_df, ['expiry_date', 'date_payment
 #Initialize the local database engine
 local_engine = db_connector.init_db_engine('db_local_creds.yaml')
 
-db_connector.upload_to_db(users_df, local_engine,'dim_users')
+#db_connector.upload_to_db(users_df, local_engine,'dim_users')
+
+
+pdf_df = data_extractor.retrieve_pdf_data('https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf')
+#print(pdf_df)
+pdf_df = data_cleaning.clean_card_data(pdf_df)
+#print(pdf_df)
+db_connector.upload_to_db(pdf_df, local_engine,'dim_card_details')
 
