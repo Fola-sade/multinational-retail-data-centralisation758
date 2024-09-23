@@ -3,47 +3,11 @@ import requests #Extracting data from an api
 import boto3  #Extracting data from an AWS S3 Bucket
 import pandas as pd
 import tabula
+from io import StringIO
 
 class DataExtractor:
     def __init__(self):
         pass
-    #Method to extract from a CSV doc
-    def extract_from_csv(self, filepath):
-        try:
-            data = pd.read_csv(filepath)
-            print(f"Succcsvessfully extracted data from {filepath}")
-            return data
-        except Exception as e:
-            print(f"Error extracting data from csv: {e}")
-            return None
-    #Method to extract data from an API
-    def extract_from_api(self, api_url, headers = None):
-        try:
-            response = requests.get(api_url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            print(f"Successfully extracted data from API: {api_url}")
-            return data
-        except Exception as e:
-            print(f"HTTP error: {e}")
-        except Exception as e:
-            print(f"Error extracting data from API: {e}")
-            return None
-        
-    def extract_from_s3(self, bucket_name, file_key, aws_access_key, aws_secret_key):
-        try:
-            s3 = boto3.client(
-                's3', 
-                aws_access_key_id = aws_access_key,
-                aws_secret_access_key = aws_secret_key
-            )
-            obj = s3.get_object(Bucket = bucket_name, Key = file_key)
-            data = obj['Body'].read().decode('utf-8')
-            print(f"Successfully extracted data from S3 bucket: {bucket_name}")
-            return data
-        except Exception as e:
-            print(f"Error extracting data from S3: {e}")
-            return None
         
     def read_rds_table(self, engine, table_name):
         """
@@ -77,4 +41,54 @@ class DataExtractor:
         except Exception as e:
             print(f"Error extracting data from PDF: {e}")
             return pd.DataFrame()  # Return empty DataFrame in case of error
+    
+    def list_number_of_stores(self, endpoint, header):
+        '''
 
+        This first get request extracts the store data throough the API; 
+        Arg: endpoint and header
+
+        '''
+        response = requests.get(url = endpoint, headers = header)
+        data = response.json()
+        print(data)
+        return data['number_stores']
+    
+    def retrieve_stores_data (self,header, no_of_stores):
+        '''This method extracts all the store details using url address and header dictionary
+        Args:
+            header(dictionary): contains key information
+            number_of_stores(int): number of stores whose data need to be extracted
+        Returns:
+            Dataframe   
+            
+            '''
+        store_data = []
+
+        for i in range(0, no_of_stores):
+            endpoint = f"https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details/{i}"
+            response = requests.get(url=endpoint,headers=header)
+            data = response.json()
+            store_data.append(data)
+
+        df = pd.DataFrame(store_data)
+        return df
+    
+
+    def extract_from_s3(self,bucket_name, object_key):
+        ''' This method extracts data(product data) stored in csv format from S3 bucket on AWS
+        It uses boto3 package to download
+        Args:
+            bucket_name: name of the  S3 bucket on AWS
+            object_key: name of the file on bucket
+            
+        Returns: 
+            Dataframe'''
+        client = boto3.client('s3')
+        obj_csv = client.get_object(Bucket=bucket_name, Key=object_key)
+        body = obj_csv['Body']
+        csv_string = body.read().decode('utf-8')
+
+        df = pd.read_csv(StringIO(csv_string))
+
+        return df
