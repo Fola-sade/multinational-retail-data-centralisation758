@@ -8,62 +8,6 @@ class DataCleaning:
     def __init__(self):
         pass
     
-    def clean_csv_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Clean data extracted from a CSV file.
-        
-        :param df: The pandas DataFrame containing the CSV data.
-        :return: A cleaned pandas DataFrame.
-        """
-        # Example cleaning steps (can be customized)
-        # - Drop duplicates
-        # - Fill or drop missing values
-        # - Remove any irrelevant columns
-        
-        df_cleaned = df.drop_duplicates()
-        df_cleaned = df_cleaned.dropna()  # Handle missing values
-
-        
-        print("CSV data cleaned successfully.")
-        return df_cleaned
-
-    def clean_api_data(self, data: dict) -> pd.DataFrame:
-        """
-        Clean data extracted from an API response.
-        
-        :param data: The raw data from the API response.
-        :return: A cleaned pandas DataFrame.
-        """
-        # Convert the API data (assuming it's in dictionary form) to a DataFrame
-        df = pd.DataFrame(data)
-        
-        # Example cleaning steps (can be customized)
-        # - Normalize the structure
-        # - Remove unnecessary keys or columns
-        # - Convert data types as needed
-        
-        df_cleaned = df.dropna()  # Handle missing values
-        
-        print("API data cleaned successfully.")
-        return df_cleaned
-
-    def clean_s3_data(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Clean data extracted from an S3 bucket.
-        
-        :param df: The pandas DataFrame containing the S3 data.
-        :return: A cleaned pandas DataFrame.
-        """
-        # Example cleaning steps (can be customized)
-        # - Handle missing or null values
-        # - Remove unwanted columns
-        # - Standardize formats (dates, strings, etc.)
-        
-        df_cleaned = df.fillna('Unknown')  # Example of handling missing values
-        
-        print("S3 data cleaned successfully.")
-        return df_cleaned
-    
     
     def clean_user_data(self, df, date_columns = None):
         """
@@ -152,7 +96,7 @@ class DataCleaning:
         df.replace(r'(<NA>|N/A|NULL)', pd.NA, inplace=True,regex=True)
         df['address'] = df['address'].replace(r'\n', ',', regex=True)
         print(df)
-        df.replace(r'^\s*$', pd.NA, regex=True,inplace=True) # replacing blank whitespaces
+        df.replace(r'^\s*$', pd.NA, regex=True) # replacing blank whitespaces
         df.replace(r'[A-Z0-9]{10}', pd.NA, inplace=True,regex=True)
         #taking out the locality from the address as we already have a column which stores locality
         res=df['address'].str.rpartition(',')
@@ -174,7 +118,7 @@ class DataCleaning:
         duplicated_store = df.duplicated(subset=['address', 'opening_date','locality'],keep=False)
         #print(store_df[duplicated_store])
         #drop rows where all the columns in subset are null 
-        df.dropna(how='all',subset=['address','store_code','locality'],inplace=True)
+        df.dropna(how='all',subset=['address','store_code','locality'], inplace=True)
         #convert the datatype of staff_numbers column to int
         df['staff_numbers'] = np.floor(pd.to_numeric(df['staff_numbers'], errors='coerce')).astype('Int64')
         # to efficiently use the memory convert following columns to category type
@@ -187,31 +131,42 @@ class DataCleaning:
         '''This method is used to clean the weight column from product data and returns dataframe'''
        
         df['weight'] = df['weight'].fillna('missing')
-        df['weight'].replace(r'\d+ x \d+', 'missing', inplace= True, regex=True) #reglar expression to replace 'x' symbols 
+        df['weight'] = df['weight'].replace(r'\d+ x \d+', 'missing', regex=True) #reglar expression to replace 'x' symbols 
 
-        df['weight'].replace(r'[A-Z0-9]{10}', 'missing', inplace= True, regex=True)
-        df['weight'].replace(r'77\s\w*', '', inplace= True, regex=True)
+        df['weight'] = df['weight'].replace(r'[A-Z0-9]{10}', 'missing', regex=True)
+        df['weight'] = df['weight'].replace(r'77\s\w*', '', regex=True)
 
         mappings_weight = {'missingg': 'missing'}
-        df['weight'].replace(mappings_weight, inplace= True)
+        df['weight'] = df['weight'].replace(mappings_weight)
 
         def conversion_in_kg(weight):
             '''Method to strip unit strings, convert to float data type, and convert to kilograms.'''
-            
-            if weight[-2:] == 'kg':
-                return float(weight[:-2])
-            elif weight.find(' x ') != -1:
-                return eval(weight.replace(' x ', '*')[:-1]) / 1000
-            elif weight[-1] == 'g' or weight[-2:] == 'ml' or weight.find('.') != -1:
-                return float(re.sub('[^0-9]', '', weight)) / 1000
-            elif weight[-2:] == 'oz':
-                return float(weight[:-2]) * 0.0283495
+            if weight == 'missing' or weight == '':  # Handle missing or empty weights
+               return np.nan
+    
+            weight = weight.lower().strip()  # Normalize the weight string for easier matching
+
+            # Convert based on units
+            if weight.endswith('kg'):
+               return float(weight[:-2])  # Remove 'kg' and convert to float
+            elif weight.endswith('g'):
+               return float(weight[:-1]) / 1000  # Convert grams to kilograms
+            elif weight.endswith('oz'):
+               return float(weight[:-2]) * 0.0283495  # Convert ounces to kilograms
+            elif weight.endswith('ml'):
+               return float(weight[:-2]) / 1000  # Assume density of 1g/ml for conversion
             else:
-                return weight
+                # Try to strip non-numeric characters and convert remaining numbers
+                numeric_weight = re.sub('[^0-9.]', '', weight)
+                # Ensure only one decimal point is present
+                if numeric_weight.count('.') <= 1 and numeric_weight:  
+                    return float(numeric_weight) / 1000 if numeric_weight else np.nan
+                else:
+                    return np.nan  # Return NaN for invalid cases
                         
 
         df['weight'] = df['weight'].apply(conversion_in_kg)
-        df['weight'].replace('missing', np.nan, inplace=True)
+        df['weight'] = df['weight'].replace('missing', np.nan)
     
         df['weight'] = pd.to_numeric(df['weight'], errors='coerce') # this will replace the values that cannot be converted to numeric with NaN
         df['weight'] = df['weight'].astype('float64')
@@ -223,12 +178,42 @@ class DataCleaning:
         '''This method cleans product data and returns clean dataframe'''
         
         df['product_price'] = df['product_price'].str.replace('£','')
-        df=self.replace_invalid_strings_to_null(df,'product_price')
+        df['product_price'] = df['product_price'].replace(r'[A-Z0-9]{10}', pd.NA, regex=True)
         duplicate_products = df.duplicated(subset=['product_name', 'weight','category','product_code'],keep=False)
         df.dropna(how= 'all', subset=['product_name', 'category','product_code'], inplace=True)
-        df=self.replace_invalid_strings_to_null(df,'category')
+        df['category'] = df['category'].replace(r'[A-Z0-9]{10}', pd.NA, regex=True)
         df['category']= df['category'].astype('category')
-        df=self.replace_invalid_strings_to_null(df,'removed')
-        df=self.clean_date(df,'date_added')
-        df.drop(df[df['user_uuid'].str.len() != 36].index, inplace=True)
+        df['removed'] = df['removed'].replace(r'[A-Z0-9]{10}', pd.NA, regex=True)
+        df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
+        #print(df.columns)
+        df.drop(df[df['uuid'].str.len() != 36].index, inplace=True)
+        return df
+    
+    def clean_orders_data(self, df):
+        '''
+        This method will remove the columns first_name, last_name,and 1
+        '''
+        df = df.drop(columns =['first_name', 'last_name', '1'])
+        
+        return df
+    
+    def clean_dim_date(self, df):
+        #formatting timestamp  and repalcing with null for inconsistent values
+        df['timestamp']= pd.to_datetime(df['timestamp'], format="%H:%M:%S", errors='coerce') # this adds default date to timestamp
+        df['timestamp']= df['timestamp'].dt.time # extracting only timestamp values
+        #formatting month, year and day columns
+        df = self.date_parts_clean(df,'month')
+        df = self.date_parts_clean(df,'year')
+        df = self.date_parts_clean(df,'day')
+        df['time_period'] = df['time_period'].replace(r'[A-Z0-9]{10}', pd.NA, regex=True)
+        df = df.replace('NULL', pd.NA)
+        df = df.drop(df[df['date_uuid'].str.len() != 36].index)
+        df.dropna(how = 'all', subset=['timestamp', 'month', 'year', 'day', 'time_period','date_uuid'], inplace=True)
+        return df
+    
+    def date_parts_clean(self,df,column):
+        df[column] = np.round(pd.to_numeric(df[column], errors='coerce')) #this function replaces non-numeric values with null
+        df[column]= df[column].fillna(0) # filling null values with 0
+        df[column]= df[column].astype(int) # converting month column to int to takeout decimal points
+        df[column] = df[column].replace(0,pd.NA)
         return df

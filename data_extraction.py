@@ -92,3 +92,25 @@ class DataExtractor:
         df = pd.read_csv(StringIO(csv_string))
 
         return df
+
+    def extract_from_s3_date(self, bucket_name, object_key):
+        ''' This method extracts data(date-time data) stored in csv format from S3 bucket on AWS
+        It uses boto3 package to download
+        Args:
+            bucket_name: name of the  S3 bucket on AWS
+            object_key: name of the file on bucket
+            
+        Returns: 
+            Dataframe'''
+        client = boto3.client('s3')
+
+        bucket_name = 'data-handling-public'
+
+        object_key = 'date_details.json'
+        obj_json = client.get_object(Bucket=bucket_name, Key=object_key)
+        body = obj_json['Body']
+        json_string = body.read().decode('utf-8')
+
+        df = pd.read_json(StringIO(json_string))
+
+        return df
