@@ -1,9 +1,10 @@
+from io import StringIO
 import csv
 import requests #Extracting data from an api
 import boto3  #Extracting data from an AWS S3 Bucket
 import pandas as pd
 import tabula
-from io import StringIO
+
 
 class DataExtractor:
     def __init__(self):

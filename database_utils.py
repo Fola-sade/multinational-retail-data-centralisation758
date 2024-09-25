@@ -1,8 +1,8 @@
+from sqlalchemy import create_engine, text
+from sqlalchemy import text  # Import text function
 import psycopg2
 import pandas as pd
 import yaml
-from sqlalchemy import create_engine, text
-from sqlalchemy import text  # Import text function
 
 class DatabaseConnector:
     def __init__(self):
