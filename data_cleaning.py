@@ -9,7 +9,7 @@ class DataCleaning:
         pass
     
     
-    def clean_user_data(self, df, date_columns = None):
+    def clean_user_data(self, df):
         """
         Cleans a DataFrame by handling NULL values, converting dates, and filtering out invalid data.
         The cleaning process will adapt based on the columns present in the DataFrame.
@@ -17,38 +17,25 @@ class DataCleaning:
         :param df: DataFrame to clean.
         :return: Cleaned DataFrame, or None if the input is invalid.
         """
-        # Ensure that df is a valid DataFrame before proceeding
-        if df is None:
-            print("Error: Received None as the DataFrame input.")
-            return None
+        # clean invalid dates
+        df['join_date'] = pd.to_datetime(df['join_date'], errors='coerce')
+        df['date_of_birth'] = pd.to_datetime(df['date_of_birth'], errors='coerce')
+        # clean_country_code column
+        df['country_code'] = df['country_code'].astype('string')
+        mapping = {'GGB':'GB'}
+        df['country_code'] = df['country_code'].replace(r'[A-Z0-9]{10}', pd.NA, regex=True)
+        df['country_code'] = df['country_code'].replace(mapping)
+        df['country_code'] = df['country_code'].replace('', pd.NA) 
+        df = df.replace('NULL', pd.NA)
+        df.dropna(axis='index',how = 'all', subset=['first_name','last_name'], inplace=True)
+        # cleaning phone number
+        # remove country codes and/or extensions from phone numbers
+        df['phone_number'] = df['phone_number'].str.replace('\+1|\+44|\+49|x\w+', '', regex=True)
+        # remove non-numeric characters from phone numbers
+        df['phone_number'] = df['phone_number'].str.replace('\D+', '', regex=True)
 
-        if df.empty:
-            print("Error: Received an empty DataFrame.")
-            return None
-
-        try:
-            # Drop rows with any missing values (can be adjusted based on the use case)
-            df.dropna(inplace=True)
-
-            # Convert any columns that are recognized as dates
-            if date_columns:
-                for col in date_columns:
-                    if col in df.columns:
-                        # Try converting columns that might be dates
-                        try:
-                            df[col] = pd.to_datetime(df[col], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-                        except Exception as e:
-                            print(f"Error converting column {col} to datetime: {e}")
-                
-            # Remove any rows where numerical values are invalid (e.g., age less than 0)
-            numerical_columns = df.select_dtypes(include=['number']).columns
-            for col in numerical_columns:
-                if col == 'age':
-                    df = df[df[col] > 0]  # Remove rows where 'age' is <= 0
-
-        except Exception as e:
-            print(f"An error occurred while cleaning the data: {e}")
-            return None
+        # drop rows where unique user id is not standard 36 characters in length
+        df.drop(df[df['user_uuid'].str.len() != 36].index, inplace=True)
 
         return df
     

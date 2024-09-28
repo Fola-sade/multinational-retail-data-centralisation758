@@ -4,7 +4,7 @@ import requests #Extracting data from an api
 import boto3  #Extracting data from an AWS S3 Bucket
 import pandas as pd
 import tabula
-
+from io import StringIO
 
 class DataExtractor:
     def __init__(self):
@@ -23,6 +23,7 @@ class DataExtractor:
         try:
         # Using pandas read_sql_table to read the table into a DataFrame
             df = pd.read_sql_table(table_name, con=engine)
+            print(df)
             return df
     
         except Exception as e:

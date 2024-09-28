@@ -4,6 +4,7 @@ import psycopg2
 import pandas as pd
 import yaml
 
+
 class DatabaseConnector:
     def __init__(self):
         pass
