@@ -32,8 +32,8 @@ db_connector.upload_to_db(users_df, local_engine,'dim_users')
 
 #API
 #Extract, clean and upload store details using API
-endpoint = 'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
-header = {"x-api-key":"yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX" }
+endpoint = ''
+header = {"x-api-key":"" }
 #no_of_stores = data_extractor.list_number_of_stores(endpoint, header)
 #print(no_of_stores)
 #df_stores = data_extractor.retrieve_stores_data (header, no_of_stores)
