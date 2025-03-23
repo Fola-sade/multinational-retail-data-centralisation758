@@ -56,3 +56,19 @@ Hence, once this is run, the postgres database can be accessed and all the infor
 - AWS RDS database: This table which acts as the single source of truth for all orders the company has made in the past is stored in a database on AWS RDS.The data is extracted, cleaned and strored in the table named "dim_orders" on local postgreSQL database.
 -AWS s3 bucket: The final source of data is a JSON file containing the details of when each sale happened, as well as related attributes.The file is currently stored on S3.The data is cleaned and stored in "dim_date_times" table on local database.
 
+### Learning Outcomes:
+
+Throughout the development of this tool, key insights were gained:
+
+- **Star-Based Schema Optimisation:** Understanding and implementing a star-based database schema proved instrumental in supplementing the efficiency of analytical queries. This structured approach to organising dimensions and fact tables facilitates greater data analysis.
+
+- **Column Casting and Data Type Precision:** Learning the importance of casting columns to their correct data types significantly improved the overall integrity of the database.
+
+- **Primary Key Implementation in Dimensions:** Establishing primary keys in dimension tables ensures data uniqueness but also contributes to maintaining data integrity. This foundational step enhances data quality and supports reliable table joins.
+
+- **Foreign Key Constraints for Referential Integrity:** Adding foreign key constraints in the orders table proved crucial for establishing relationships with dimension tables. This not only enhances data consistency but also optimises query performance.
+
+- **SQL Expertise for Business Insights:** Utilising Common Table Expressions (CTEs), joins, functions such as COUNT and ROUND and various other clauses in SQL queries for extracting metrics. This enhances the business's understanding of its sales, facilitating more informed decision-making processes. 
+
+ The experience garnered from implementing these features has been invaluable in advancing my expertise in data management and analysis.
+
