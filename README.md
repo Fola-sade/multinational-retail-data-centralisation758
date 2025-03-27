@@ -16,9 +16,9 @@ A new Github repo was created for this projects
 
 ## Milestone 2:
 
-- The first step is to set up a new database within pgadmin4,called sales_data. pgAdmin is the most popular and feature rich Open Source administration and development platform for PostgreSQL, the most advanced Open Source database in the world.I downloaded Postgres version 17 and logged into it in pgadmin4.  The sales_data database created in pgadmin will store the extracted tables from multitple data sources. After collecting all the tables, i'll then create a STAR based schema in a later part of this project. 
+- The first step is to set up a new database within pgadmin4,called sales_data. pgAdmin is the most popular and feature rich Open Source administration and development platform for PostgreSQL, the most advanced Open Source database in the world.I downloaded Postgres version 17 and logged into it in pgadmin4.  The sales_data database created in pgadmin will store the extracted tables from multiple data sources. After collecting all the tables, i'll then create a STAR based schema in a later part of this project. 
 
-    -- Challenge faced: Path Conflicts between different versions of applications due to not including the necessary filepath on the Environment Variable, paticularly in the PATH variable. My operating system could not locate and execute the application from any directory without needing to specify its full path every time. 
+    -- Challenge faced: Path Conflicts between different versions of applications due to not including the necessary filepath on the Environment Variable, particularly in the PATH variable. My operating system could not locate and execute the application from any directory without needing to specify its full path every time. 
 
 - Three files were created to initialize the 3 classes (DataExtractor, DatabaseConnector and DataCleaning ) that will be used for the project. The files are data_extraction.py, database_utils.py and data_cleaning.py respectively. 
 
