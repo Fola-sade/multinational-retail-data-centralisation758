@@ -1,6 +1,6 @@
 # MULTINATIONAL RETAIL DATA CENTRALISATION
 
-In this project, I'll  extract transform, load and analyse large datasets from multiple data sources. By utilising python programming language and its libraries, Use Case: creating a system that will centralize the sales data of Company A stored in several data sources.
+In this project, I'll  extract, transform, load and analyse large datasets from multiple data sources. By utilising python programming language and its libraries, Use Case: creating a system that will centralize the sales data of Company A stored in several data sources.
 
 - Developed a system that extracts retail sales data from five different data sources; PDF documents; an AWS RDS database; RESTful API, JSON and CSV files.
 - Created a Python class which cleans and transforms over 120k rows of data before being loaded into a Postgres database.
